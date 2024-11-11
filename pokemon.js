@@ -1,40 +1,40 @@
 const MAX_POKEMON = 1025;
-
 const listWrapper = document.querySelector(".list-wrapper");
 const searchInput = document.querySelector("#search-input");
 const numberFilter = document.querySelector("#number");
 const nameFilter = document.querySelector("#name");
-const notFoundMessege = document.querySelector("#not-found-message");
+const notFoundMessage = document.querySelector("#not-found-message");
 
-let allPokemon = []; //cria lista vazia
+let allPokemons = [];
 
 fetch(`https://pokeapi.co/api/v2/pokemon?limit=${MAX_POKEMON}`)
     .then((response) => response.json())
     .then((data) => {
-        allPokemon = data.results;
-        displayPokemon(allPokemon);//funcao
+        allPokemons = data.results;
+        displayPokemons(allPokemons);
     });
 
-async function fetchPokemonDatabefoRect(id) {
+async function fetchPokemonDataBeforeRedirect(id) {
     try {
-        const [pokemon, pokemoSpecies] = await Promise.all([
-            fetch(`https://pokeapi.co/api/v2/pokemon/${id}}`)
-                .then((res) => res.json),
-            fetch(`https://pokeapi.co/api/v2/pokemon-species/${id}}`)
-                .then((res) => res.json),
+        const [pokemon, pokemonSpecies] = await Promise.all([
+            fetch(`https://pokeapi.co/api/v2/pokemon/${id}`).then((res) =>
+                res.json()
+            ),
+            fetch(`https://pokeapi.co/api/v2/pokemon-species/${id}`).then((res) =>
+                res.json()
+            ),
         ]);
         return true;
-    } catch (erro) {
-        console.log("fedeu, falhou kkkkkkk");
+    } catch (error) {
+        console.error("Failed to fetch Pokemon data before redirect");
     }
 }
-
-function displayPokemon(pokemon) {
+function displayPokemons(pokemon) {
     listWrapper.innerHTML = "";
 
     pokemon.forEach((pokemon) => {
         let pokemonID = pokemon.url.split("/")[6];
-        pokemonIDzero = pokemonID.padStart(3, "0");
+        pokemonIDzero = pokemonID.padStart(3, "0"); // Garante que pokemonID sempre tenha três dígitos
         const listItem = document.createElement("div");
         listItem.className = "list-item";
         listItem.innerHTML = `
@@ -50,40 +50,41 @@ function displayPokemon(pokemon) {
     `;
 
         listItem.addEventListener("click", async () => {
-            const success = await fetchPokemonDatabefoRect(pokemonID);
+            const success = await fetchPokemonDataBeforeRedirect(pokemonID);
             if (success) {
-                window.location.ref = `./detail.html?id=${pokemonID}`;
+                window.location.href = `./detail.html?id=${pokemonID}`;
             }
         });
-        listWrapper.appendChild(listItem)
+
+        listWrapper.appendChild(listItem);
     });
 }
 
 searchInput.addEventListener("keyup", handleSearch);
 
 function handleSearch() {
-    const searchTerm = searchInput.value.toLoweCase();
-    let filteredPokemon;
+    const searchTerm = searchInput.value.toLowerCase();
+    let filteredPokemons;
+
     if (numberFilter.checked) {
-        filteredPokemon = allPokemon.filter((pokemon) => {
+        filteredPokemons = allPokemons.filter((pokemon) => {
             const pokemonID = pokemon.url.split("/")[6];
             return pokemonID.startsWith(searchTerm);
         });
-
     } else if (nameFilter.checked) {
-        filteredPokemon = allPokemon.filter((pokemon) => {
-            pokemon.name.toLoweCase().startsWith(searchTerm);
-        });
+        filteredPokemons = allPokemons.filter((pokemon) =>
+            pokemon.name.toLowerCase().startsWith(searchTerm)
+        );
     } else {
-        filteredPokemon = allPokemon;
+        filteredPokemons = allPokemons;
     }
 
-    displayPokemon(filteredPokemon);
+    displayPokemons(filteredPokemons);
 
-    if (filteredPokemon.leght === 0) {
-        notFoundMessege.style.display = "block";
+    if (filteredPokemons.length === 0) {
+        notFoundMessage.style.display = "block";
     } else {
-        notFoundMessege.style.display = "none";
+        notFoundMessage.style.display = "none";
     }
 }
 
@@ -92,6 +93,6 @@ closeButton.addEventListener("click", clearSearch);
 
 function clearSearch() {
     searchInput.value = "";
-    displayPokemon(allPokemon);
-    notFoundMessege.style.display = "none";
+    displayPokemons(allPokemons);
+    notFoundMessage.style.display = "none";
 }
